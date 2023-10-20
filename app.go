@@ -21,8 +21,14 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	println("Cliccato")
+func (a *App) StartBalancer(name string) string {
+	println("Started balancer")
+	startProxy(name)
+
+	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+
+func (a *App) StopBalancer(name string) string {
+	println("Stopped balancer")
 	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
