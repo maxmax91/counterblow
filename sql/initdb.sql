@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS rules (
+  rule_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+  rule_name varchar(250) NOT NULL,
+  
+  PRIMARY KEY (rule_id)
+);
