@@ -1,11 +1,12 @@
 version: '3.7'
 services:
     postgres:
-        image: postgres:10.5
+        image: postgres:16
         restart: always
         environment:
-          - POSTGRES_USER=postgres
-          - POSTGRES_PASSWORD=postgres123
+          - POSTGRES_USER=counterblow_user
+          - POSTGRES_PASSWORD=postgres123!?
+          - POSTGRES_DB=counterblow_db
         logging:
           options:
             max-size: 10m
@@ -15,3 +16,7 @@ services:
         volumes: 
           - ./postgres-data:/var/lib/postgresql/data
           - ./sql/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+
+
+# psql shortcut
+# PGPASSWORD='postgres123!?' psql -h localhost -p 5438 -U counterblow_user -d counterblow_db
