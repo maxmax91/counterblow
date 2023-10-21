@@ -5,7 +5,7 @@
 		"label": "build",
 		"type": "shell",
 		"options": {
-		  "cwd": "${workspaceFolder}"
+		  "cwd": "${workspaceFolder}/counterblow_app"
 		},
 		"command": "go",
 		"args": [
