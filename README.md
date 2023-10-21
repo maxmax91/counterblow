@@ -44,18 +44,42 @@ https://eli.thegreenplace.net/2022/go-and-proxy-servers-part-1-http-proxies/
 - Wails
 https://wails.io/docs/introduction/
 
-- Database drivers
+- Database drivers (Postgres)
 https://www.calhoun.io/connecting-to-a-postgresql-database-with-gos-database-sql-package/
 
 - React documentation
 https://react.dev/learn/tutorial-tic-tac-toe
 
 # Debug
+wails dev
 
+# Package installations
 
+1) Install go
+https://go.dev/doc/install
+echo "export PATH=\$PATH:/usr/local/go/bin:$HOME/go/bin" >> $HOME/.profile
 
-This is the official Wails React template.
+Try with $go version
 
+2) Install npm https://nodejs.org/en/download/
+Try with $npm --version
+
+2) Install wails
+This will try to install also gcc build tools, libgtk3 and libwebkit
+go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+Try with $wails version
+
+3) Install packages
+Postgres driver
+
+go get -u github.com/lib/pq
+
+4) Starting postgres server
+
+docker-compose up
+
+4) Configuration
 You can configure the project by editing `wails.json`. More information about the project settings can be found
 here: https://wails.io/docs/reference/project-config
 
