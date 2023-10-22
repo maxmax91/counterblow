@@ -55,7 +55,7 @@ func database_addHit(from string, to string) error {
 }
 func database_addRule(r RoutingRule) error {
 	fmt.Println("Entering database_addRule function")
-	stmt, err := db.Prepare("INSERT INTO hits (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest) VALUES($1, $2, $3, $4, $5, $6) RETURNING rule_id;")
+	stmt, err := db.Prepare("INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest) VALUES($1, $2, $3, $4, $5, $6) RETURNING rule_id;")
 
 	if err != nil {
 		panic(err.Error())
@@ -72,7 +72,7 @@ func database_addRule(r RoutingRule) error {
 }
 
 func database_removeRule(ruleid int) error {
-	stmt, err := db.Prepare("DELETE FROM rules WHERE ruleid = $1;")
+	stmt, err := db.Prepare("DELETE FROM rules WHERE rule_id = $1;")
 	if err != nil {
 		panic(err.Error())
 	}

@@ -2,7 +2,7 @@
 
 Project built with go+wails+React
 
-# Proxy policies
+# Possible Proxy policies
 
 - Round robin - redistribuite traffic equally among different servers
 - Less latency - redirect to the server with less latency (nearest)
@@ -24,6 +24,16 @@ Observations:
 - Can be use the round robin adaptative and assure the server does not change between users? How?
     1) can be kept a lookout table between ip and server, with a expiration time
     2) can be opened a session using cookies
+
+# Implemented stuff
+Implemented:
+- Ability to add and remove rules via UI with a supporting postgres db
+- Ability to rewrite urls and write different rules with different servers alternating
+
+
+# How to use it
+docker-compose up
+
 
 # React
 Added modules
@@ -81,7 +91,7 @@ Postgres driver
 
 go get -u github.com/lib/pq
 
-4) Starting postgres server
+4) Starting postgres server with sample rules
 
 docker-compose up
 
@@ -99,11 +109,13 @@ https://gorm.io/index.html
 - UDP simple server for receiving diagnostic stuff?
 https://gist.github.com/miekg/d9bc045c89578f3cc66a214488e68227
 
-- Why not? React live chart for visualizing reverse proxy usage
+- React live chart for visualizing reverse proxy usage
 https://apexcharts.com/react-chart-demos/line-charts/realtime/
 
 - Regex search and replace for something similar to mod_rewrite
+Done
 https://www.geeksforgeeks.org/golang-replacing-all-string-which-matches-with-regular-expression/
+
 
 ## Live Development
 

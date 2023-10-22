@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -85,6 +86,7 @@ func startReverseProxy(listeningAddr string, listeningPort int, rules []RoutingR
 
 	proxy := loadBalancingReverseProxy()
 	log.Println("Starting proxy server on", fromAddr)
+	TextAreaLog("Started.")
 	if err := http.ListenAndServe(fromAddr, proxy); err != nil {
 		log.Fatal("ListenAndServe:", err)
 		return err
@@ -111,6 +113,8 @@ func parseToUrl(addr string) *url.URL {
 func loadBalancingReverseProxy() *httputil.ReverseProxy {
 
 	director := func(req *http.Request) {
+		ctx, cancel := context.WithCancel(req.Context())
+		*req = *req.WithContext(ctx)
 
 		var target *url.URL
 		// Simple round robin between the two targets
@@ -138,6 +142,7 @@ func loadBalancingReverseProxy() *httputil.ReverseProxy {
 				println(fmt.Sprintf("Redirecting w/o changes in uri %s for roundrobin rule %d", reqUrl, id))
 				newUri = reqUrl
 			}
+			database_addHit(reqUrl, newUri)
 			// send the request to the right server!
 			roundRobinRules[id].current_server += 1
 			roundRobinRules[id].current_server = roundRobinRules[id].current_server % len(roundRobinRules[id].rule_servers)
@@ -147,14 +152,16 @@ func loadBalancingReverseProxy() *httputil.ReverseProxy {
 			break
 		}
 
-		if len(newUri) == 0 {
-
-		}
-
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
-		req.Host = target.Host
+		//req.Host = target.Host // ATTENTION this is only to try!
 		req.URL.Path, req.URL.RawPath = joinURLPath(target, newUri)
+
+		if len(newUri) == 0 {
+			println("Cancelling request")
+			cancel()
+			return
+		}
 		pageCount += 1
 		UpdateServedPages(pageCount)
 		TextAreaLog(fmt.Sprintf("Served Url:%v RawPath:%v to Host:%v!", req.URL.Path, req.URL.RawPath, req.Host))
