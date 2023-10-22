@@ -6,8 +6,8 @@ export function OnDOMContentLoaded(arg1) {
   return window['go']['main']['App']['OnDOMContentLoaded'](arg1);
 }
 
-export function SaveRule(arg1, arg2, arg3, arg4) {
-  return window['go']['main']['App']['SaveRule'](arg1, arg2, arg3, arg4);
+export function SaveRule(arg1, arg2, arg3, arg4, arg5, arg6) {
+  return window['go']['main']['App']['SaveRule'](arg1, arg2, arg3, arg4, arg5, arg6);
 }
 
 export function StartBalancer(arg1, arg2) {

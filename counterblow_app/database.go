@@ -53,10 +53,24 @@ func database_addHit(from string, to string) error {
 	fmt.Printf("Successfully inserted with datetime %s\n", res)
 	return nil
 }
-func database_addRule(from string, to string) error {
-	// todo
+func database_addRule(r RoutingRule) error {
+	fmt.Println("Entering database_addRule function")
+	stmt, err := db.Prepare("INSERT INTO hits (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest) VALUES($1, $2, $3, $4, $5, $6) RETURNING rule_id;")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	res, err := stmt.Exec(r.rule_type, r.rule_ipaddr, r.rule_subnetmask, r.rule_servers, r.rule_source, r.rule_dest)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Printf("Successfully inserted with id %s\n", res)
 	return nil
 }
+
 func database_removeRule(ruleid int) error {
 	stmt, err := db.Prepare("DELETE FROM rules WHERE ruleid = $1;")
 	if err != nil {
@@ -72,7 +86,7 @@ func database_removeRule(ruleid int) error {
 }
 
 func database_loadRules() []RoutingRule {
-	rows, err := db.Query("SELECT rule_id, rule_type, rule_ipaddr, rule_subnetmask, rule_servers FROM rules;")
+	rows, err := db.Query("SELECT rule_id, rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest FROM rules;")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -85,7 +99,7 @@ func database_loadRules() []RoutingRule {
 	for rows.Next() {
 		var rule RoutingRule
 
-		if err := rows.Scan(&rule.rule_id, &rule.rule_type, &rule.rule_ipaddr, &rule.rule_subnetmask, &rule.rule_servers); err != nil {
+		if err := rows.Scan(&rule.rule_id, &rule.rule_type, &rule.rule_ipaddr, &rule.rule_subnetmask, &rule.rule_servers, &rule.rule_source, &rule.rule_dest); err != nil {
 			panic(err.Error())
 		}
 		rulesSlice = append(rulesSlice, rule)

@@ -1,7 +1,7 @@
 import {useState, useEffect} from 'react';
 import logo from './assets/images/logo-universal.png';
 import './App.css';
-import {StartBalancer, StopBalancer, OnDOMContentLoaded} from "../wailsjs/go/main/App";
+import {StartBalancer, StopBalancer, OnDOMContentLoaded, SaveRule} from "../wailsjs/go/main/App";
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -11,11 +11,11 @@ runtime.EventsOn("rcv:update_served_pages", (msg) => document.getElementById("se
 runtime.EventsOn("rcv:clear_rules_listbox", () => document.getElementById("rules_list_box").innerHTML = "")
 
 
-runtime.EventsOn("rcv:add_served_rule", function(rule_id, rule_type, rule_ipaddr, rule_subnetmask, rule_servers) {
+runtime.EventsOn("rcv:add_served_rule", function(rule_id, rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest) {
   var listbox = document.getElementById("rules_list_box");
   const opt1 = document.createElement("option");
   opt1.value = rule_id;
-  opt1.text = "Type: " + rule_type + " From: " + rule_ipaddr + "/" + rule_subnetmask + " - Servers: " + rule_servers;
+  opt1.text = "Type: " + rule_type + " From: " + rule_ipaddr + "/" + rule_subnetmask + " - Servers: " + rule_servers + " [rewrite from '" + rule_source + "' to '" + rule_dest + "']";
   listbox.add(opt1);
 })
 runtime.EventsOn("rcv:add_log_string", function(msg) { 
@@ -67,6 +67,14 @@ function App() {
         StartBalancer('0.0.0.0', port).then(updateResultStartBalancer);
     }
 
+    function addRule() {
+      // aggiungi una regola
+      AddRule(rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest);
+    }
+    function removeRule() {
+      alert('not yet implemented');
+    }
+
     function stopBalancer() {
       document.getElementById('buttonStart').disabled = false;
       document.getElementById('buttonStop').disabled = true;
@@ -113,8 +121,8 @@ function App() {
               <input className="servers" type="text" placeholder="$1" />
               </div>
 
-              <button>&#x2795;</button>
-              <button>&#x2796;</button>
+              <button className="btn" title="Add rule" onSubmit={addRule}>&#x2795;</button>
+              <button className="btn"  title="Remove rule" onSubmit={removeRule}>&#x2796;</button>
             </div>
             
             <h2>Served connections: <div id="served_pages">0</div></h2>

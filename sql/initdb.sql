@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS rules (
   rule_ipaddr varchar(16) NULL, -- null = no filters
   rule_subnetmask int NULL, -- null = no filter
   rule_servers varchar NOT NULL,
-  url_source_match varchar NULL DEFAULT NULL, -- catch the request only if match this regex
-  url_dest_rewrite varchar NULL DEFAULT NULL, -- rewrite the request using this 
+  rule_source varchar NULL DEFAULT NULL, -- catch the request only if match this regex. Default .*
+  rule_dest varchar NULL DEFAULT NULL, -- rewrite the request using this template. Default $0
   PRIMARY KEY (rule_id)
 );
 
@@ -16,6 +16,6 @@ CREATE TABLE IF NOT EXISTS hits (
   hit_datetime timestamp without time zone default (now() at time zone 'utc') -- utc time so there is no confusion
 );
 
-
 -- test rules
-INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, url_source_filter, url_dest_rewrite) VALUES (1, '0.0.0.0', 0, 'google.it:80,microsoft.it:80')
+INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest) VALUES (1, '0.0.0.0', 0, 'google.it:80', '/prova/(.*)', '$1/rewrited/');
+INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest) VALUES (1, '0.0.0.0', 0, 'google.it:80,microsoft.it:80,tesla.com:80', '.*', '$0');

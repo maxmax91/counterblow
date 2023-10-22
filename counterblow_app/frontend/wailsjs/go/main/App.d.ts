@@ -3,7 +3,7 @@
 
 export function OnDOMContentLoaded(arg1:string):Promise<void>;
 
-export function SaveRule(arg1:number,arg2:string,arg3:number,arg4:string):Promise<void>;
+export function SaveRule(arg1:number,arg2:string,arg3:number,arg4:string,arg5:string,arg6:string):Promise<void>;
 
 export function StartBalancer(arg1:string,arg2:number):Promise<boolean>;
 
