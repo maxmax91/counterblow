@@ -55,12 +55,16 @@ func stopProxy() {
 
 func elaborateRules(rules []RoutingRule) {
 	// round robin rules!
+	// this function transforms every rule preparing the structures that can be used by algorithms
 	for _, rule := range rules {
 
 		if rule.rule_type == 1 {
 			var rrRule RoundRobinRoutingRule // new rrrr
+			rrRule.rule_ipaddr = rule.rule_ipaddr
+			rrRule.rule_subnetmask = rule.rule_subnetmask
 			rrRule.rule_servers = []BackendServer{}
-
+			rrRule.rule_source = rule.rule_source
+			rrRule.rule_dest = rule.rule_dest
 			for _, el := range strings.Split(rule.rule_servers, ",") {
 				var backendServer BackendServer
 				backendServer.address = parseToUrl(el)
@@ -111,22 +115,30 @@ func loadBalancingReverseProxy() *httputil.ReverseProxy {
 		var target *url.URL
 		// Simple round robin between the two targets
 
-		// for each round-robin rule
+		// for each round-robin rule.
+		// it will try to follow each rewrite rule
+		// or simply follow the rule if rule_source is not set
 		var newUri string
 		for id, rrrr := range roundRobinRules {
 			// cannot use the second value! it is a copy of the element
 			// se la regola è giusta avanziamo server
-
-			println(fmt.Sprintf("Requested URI %s", req.URL.EscapedPath()))
+			reqUrl := req.URL.EscapedPath()
+			println(fmt.Sprintf("Requested URI %s", reqUrl))
 			if len(rrrr.rule_source) != 0 { // there is something in source regex filter
 				m1 := regexp.MustCompile(rrrr.rule_source)
-				newUri = m1.ReplaceAllString(req.URL.EscapedPath(), rrrr.rule_dest)
-				println(fmt.Sprintf("Rewriting uri from %s to %s", req.URL.EscapedPath(), newUri))
+				if m1.MatchString(reqUrl) {
+					println(fmt.Sprintf("Matching regex for rule %d!", id))
+					newUri = m1.ReplaceAllString(reqUrl, rrrr.rule_dest)
+					println(fmt.Sprintf("Rewriting uri from %s to %s", reqUrl, newUri))
+				} else {
+					println(fmt.Sprintf("Not matching regex for rule %d", id))
+					continue // continue without exiting the loop (try with next rule)
+				}
 			} else {
-				println(fmt.Sprintf("Redirecting w/o changes in uri %s", req.URL.EscapedPath()))
-				newUri = req.URL.EscapedPath()
+				println(fmt.Sprintf("Redirecting w/o changes in uri %s for roundrobin rule %d", reqUrl, id))
+				newUri = reqUrl
 			}
-
+			// send the request to the right server!
 			roundRobinRules[id].current_server += 1
 			roundRobinRules[id].current_server = roundRobinRules[id].current_server % len(roundRobinRules[id].rule_servers)
 			target = roundRobinRules[id].rule_servers[roundRobinRules[id].current_server].address
@@ -135,12 +147,17 @@ func loadBalancingReverseProxy() *httputil.ReverseProxy {
 			break
 		}
 
+		if len(newUri) == 0 {
+
+		}
+
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
+		req.Host = target.Host
 		req.URL.Path, req.URL.RawPath = joinURLPath(target, newUri)
 		pageCount += 1
 		UpdateServedPages(pageCount)
-		TextAreaLog(fmt.Sprintf("Served Url:%v RawPath:%v from Host:%v!", req.URL.Path, req.URL.RawPath, req.Host))
+		TextAreaLog(fmt.Sprintf("Served Url:%v RawPath:%v to Host:%v!", req.URL.Path, req.URL.RawPath, req.Host))
 		// For simplicity, we don't handle RawQuery or the User-Agent header here:
 		// see the full code of NewSingleHostReverseProxy for an example of doing
 		// that.
