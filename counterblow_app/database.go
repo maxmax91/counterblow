@@ -74,21 +74,21 @@ func database_addRule(r RoutingRule) error {
 func database_removeRule(ruleid int) error {
 	stmt, err := db.Prepare("DELETE FROM rules WHERE rule_id = $1;")
 	if err != nil {
-		panic(err.Error())
+		return err
 	}
 	_, err = stmt.Exec(ruleid)
 
 	if err != nil {
-		panic(err.Error())
+		return err
 	}
 
 	return nil
 }
 
-func database_loadRules() []RoutingRule {
+func database_loadRules() ([]RoutingRule, error) {
 	rows, err := db.Query("SELECT rule_id, rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest FROM rules;")
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -100,7 +100,7 @@ func database_loadRules() []RoutingRule {
 		var rule RoutingRule
 
 		if err := rows.Scan(&rule.rule_id, &rule.rule_type, &rule.rule_ipaddr, &rule.rule_subnetmask, &rule.rule_servers, &rule.rule_source, &rule.rule_dest); err != nil {
-			panic(err.Error())
+			return nil, err
 		}
 		rulesSlice = append(rulesSlice, rule)
 		fmt.Printf("Loaded rule %v\n", rule)
@@ -108,5 +108,5 @@ func database_loadRules() []RoutingRule {
 	if err := rows.Err(); err != nil {
 		panic(err.Error())
 	}
-	return rulesSlice
+	return rulesSlice, nil
 }

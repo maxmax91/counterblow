@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -51,7 +52,7 @@ func (a *App) RefreshRules() {
 	}
 
 	runtime.EventsEmit(global_app.ctx, "rcv:clear_rules_listbox")
-	rules = database_loadRules()
+	rules, err = database_loadRules()
 
 	for rule_id, rule := range rules {
 		fmt.Printf("Loaded rule: %v\n", rule)
@@ -61,12 +62,16 @@ func (a *App) RefreshRules() {
 	TextAreaLog("Loading rules ended.")
 }
 
-func (a *App) StartBalancer(bindIp string, port int) {
+func (a *App) StartBalancer(bindIp string, port int) error {
 	// database_addHit("from", "to")
-
+	if len(rules) == 0 {
+		TextAreaLog("No routing rules!")
+		return errors.New("No routing rules!")
+	}
 	TextAreaLog("Starting load balancer...")
 	err = startReverseProxy(bindIp, port, rules)
 	TextAreaLog("Error: " + err.Error())
+	return nil
 }
 
 func (a *App) StopBalancer(name string) string {
@@ -94,7 +99,12 @@ func (a *App) RemoveRule(rule_id int) {
 	// saving rule to db. Called from frontend
 	// prepare rule for insertion
 	println("Removing a rule...")
-	database_removeRule(rule_id)
+	err = database_removeRule(rule_id)
+	if err != nil {
+		TextAreaLog("Correctly removed item")
+	} else {
+		TextAreaLog(err.Error())
+	}
 	println("Removed.")
 
 }
