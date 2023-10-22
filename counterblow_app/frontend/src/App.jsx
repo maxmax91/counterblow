@@ -8,6 +8,16 @@ import ReactDOM from 'react-dom';
 import IPut from 'iput';
 
 runtime.EventsOn("rcv:update_served_pages", (msg) => document.getElementById("served_pages").innerText = msg)
+runtime.EventsOn("rcv:clear_rules_listbox", () => document.getElementById("rules_list_box").innerHTML = "")
+
+
+runtime.EventsOn("rcv:add_served_rule", function(rule_id, rule_type, rule_ipaddr, rule_subnetmask, rule_servers) {
+  var listbox = document.getElementById("rules_list_box");
+  const opt1 = document.createElement("option");
+  opt1.value = rule_id;
+  opt1.text = "Type: " + rule_type + " From: " + rule_ipaddr + "/" + rule_subnetmask + " - Servers: " + rule_servers;
+  listbox.add(opt1);
+})
 runtime.EventsOn("rcv:add_log_string", function(msg) { 
   var el = document.getElementById("textAreaLog");
   if (el != null) document.getElementById("textAreaLog").value += msg;
@@ -75,28 +85,34 @@ function App() {
             <div className="square bordered">
               <h2>Rules config</h2>
               
-              <select multiple>
-                <option value="1">IP: 1.1.1.1/21 Rule: RoundRobin Servers: boh1.com boh2.com</option>
-                <option value="2">Rule 2</option>
-                <option value="3">Rule 3</option>
+              <select multiple id="rules_list_box">
+                <option value="-1">Loading...</option>
               </select>
               
               <div className="formRow">
-              <span>IP Addr:</span>
+              <span>IP Addr filter (not implemented):</span>
               <IPut className="IPut" defaultValue="0.0.0.0"/> / <input className="portInput" type="text" value="0" />
               </div>
 
               <div className="formRow">
               <span>Backend servers (comma-separated)</span>
-              </div>
-              <div className="formRow">
               <input className="servers" type="text" placeholder="google.it:80,microsoft.it:80" />
               </div>
               <span>Algorythm</span>
               <select>
                 <option value="1">1: Round robin</option>
-                <option value="2">2: IP hash</option>
+                <option value="2">2: IP hash (not implemented)</option>
               </select>
+
+              <div className="formRow">
+              <span>Requested url</span>
+              <input className="servers" type="text" placeholder="(.*)" />
+              </div>
+              <div className="formRow">
+              <span>Rewrited url</span>
+              <input className="servers" type="text" placeholder="$1" />
+              </div>
+
               <button>&#x2795;</button>
               <button>&#x2796;</button>
             </div>

@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS rules (
   rule_ipaddr varchar(16) NULL, -- null = no filters
   rule_subnetmask int NULL, -- null = no filter
   rule_servers varchar NOT NULL,
+  url_source_match varchar NULL DEFAULT NULL, -- catch the request only if match this regex
+  url_dest_rewrite varchar NULL DEFAULT NULL, -- rewrite the request using this 
   PRIMARY KEY (rule_id)
 );
 
@@ -16,4 +18,4 @@ CREATE TABLE IF NOT EXISTS hits (
 
 
 -- test rules
-INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers) VALUES (1, '0.0.0.0', 0, 'google.it:80,microsoft.it:80')
+INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, url_source_filter, url_dest_rewrite) VALUES (1, '0.0.0.0', 0, 'google.it:80,microsoft.it:80')

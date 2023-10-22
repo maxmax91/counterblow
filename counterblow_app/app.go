@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/labstack/gommon/log"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
+
+var domLoaded bool
+var rules []RoutingRule
 
 type App struct {
 	ctx context.Context
@@ -31,19 +33,31 @@ func (a *App) startup(ctx context.Context) {
 
 }
 
+func AddLoadedRule(rule RoutingRule) {
+
+}
+
 func (a *App) OnDOMContentLoaded(arg1 string) {
-	println("DOM loaded")
-	TextAreaLog("Application started!")
-	TextAreaLog("Loading rules...")
+	if domLoaded == true {
+		TextAreaLog("Application started!")
+		TextAreaLog("Loading rules...")
 
-	err := database_connect()
-	if err != nil {
-		TextAreaLog(err.Error())
-	}
+		err := database_connect()
+		if err != nil {
+			TextAreaLog(err.Error())
+		}
 
-	rules := database_loadRules()
-	for _, rule := range rules {
-		log.Info(fmt.Printf("%v", rule))
+		runtime.EventsEmit(global_app.ctx, "rcv:clear_rules_listbox")
+		rules = database_loadRules()
+
+		for _, rule := range rules {
+			fmt.Printf("Loaded rule: %v\n", rule)
+			runtime.EventsEmit(global_app.ctx, "rcv:add_served_rule", rule.rule_id, rule.rule_type, rule.rule_ipaddr, rule.rule_subnetmask, rule.rule_servers)
+		}
+
+	} else {
+		fmt.Printf("Waiting second dom loading")
+		domLoaded = true
 	}
 }
 
@@ -53,9 +67,8 @@ func (a *App) StartBalancer(bindIp string, port int) bool {
 
 	// database_addHit("from", "to")
 
-	//startHttpServer(name) // era solo per debug
 	TextAreaLog("Starting load balancer...")
-	startReverseProxy(bindIp, port)
+	startReverseProxy(bindIp, port, rules)
 	return true
 }
 

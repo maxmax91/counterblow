@@ -57,8 +57,17 @@ func database_addRule(from string, to string) error {
 	// todo
 	return nil
 }
-func database_removeRule(from string, to string) error {
-	// todo
+func database_removeRule(ruleid int) error {
+	stmt, err := db.Prepare("DELETE FROM rules WHERE ruleid = $1;")
+	if err != nil {
+		panic(err.Error())
+	}
+	_, err = stmt.Exec(ruleid)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
 	return nil
 }
 
@@ -68,16 +77,22 @@ func database_loadRules() []RoutingRule {
 		panic(err.Error())
 	}
 	defer rows.Close()
+
+	var rulesSlice []RoutingRule
+
+	// append works on nil slices.
+
 	for rows.Next() {
 		var rule RoutingRule
 
 		if err := rows.Scan(&rule.rule_id, &rule.rule_type, &rule.rule_ipaddr, &rule.rule_subnetmask, &rule.rule_servers); err != nil {
 			panic(err.Error())
 		}
-		fmt.Printf("Loaded rule %v", rule)
+		rulesSlice = append(rulesSlice, rule)
+		fmt.Printf("Loaded rule %v\n", rule)
 	}
 	if err := rows.Err(); err != nil {
 		panic(err.Error())
 	}
-	return nil
+	return rulesSlice
 }

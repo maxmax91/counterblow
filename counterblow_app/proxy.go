@@ -7,13 +7,15 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"regexp"
 	"strings"
 )
 
 var started bool = false
 var pageCount int
+var roundRobinRules []RoundRobinRoutingRule
 
-// for debug purposes?
+// left for debug purposes - only starts a http web server
 func startHttpServer(bindAddr string, port string) {
 
 	if started == false {
@@ -44,7 +46,6 @@ func startHttpServer(bindAddr string, port string) {
 		}
 	} else {
 		log.Println("Proxy already started!")
-
 	}
 }
 
@@ -52,22 +53,43 @@ func stopProxy() {
 
 }
 
-func startReverseProxy(listeningAddr string, listeningPort int) error {
-	fromAddr := flag.String("from", listeningAddr+":"+fmt.Sprint(listeningPort), "proxy's listening address")
-	toAddr1 := flag.String("to1", "google.it:80", "the first address this proxy will forward to")
-	toAddr2 := flag.String("to2", "microsoft.it:80", "the second address this proxy will forward to")
-	flag.Parse()
+func elaborateRules(rules []RoutingRule) {
+	// round robin rules!
+	for _, rule := range rules {
 
-	toUrl1 := parseToUrl(*toAddr1)
-	toUrl2 := parseToUrl(*toAddr2)
+		if rule.rule_type == 1 {
+			var rrRule RoundRobinRoutingRule // new rrrr
+			rrRule.rule_servers = []BackendServer{}
 
-	proxy := loadBalancingReverseProxy(toUrl1, toUrl2)
-	log.Println("Starting proxy server on", *fromAddr)
-	if err := http.ListenAndServe(*fromAddr, proxy); err != nil {
+			for _, el := range strings.Split(rule.rule_servers, ",") {
+				var backendServer BackendServer
+				backendServer.address = parseToUrl(el)
+				rrRule.rule_servers = append(rrRule.rule_servers, backendServer)
+				fmt.Printf("Loaded backend server url %s\n", backendServer.address)
+			}
+			fmt.Printf("Loaded rule: %v\n", rule)
+			roundRobinRules = append(roundRobinRules, rrRule)
+		}
+	}
+}
+
+func startReverseProxy(listeningAddr string, listeningPort int, rules []RoutingRule) error {
+
+	elaborateRules(rules)
+
+	fromAddr := listeningAddr + ":" + fmt.Sprint(listeningPort)
+
+	proxy := loadBalancingReverseProxy()
+	log.Println("Starting proxy server on", fromAddr)
+	if err := http.ListenAndServe(fromAddr, proxy); err != nil {
 		log.Fatal("ListenAndServe:", err)
 		return err
 	}
 	return nil
+}
+
+func stopReverseProxy() {
+	// todo: implement STOP
 }
 
 // parseToUrl parses a "to" address to url.URL value
@@ -82,23 +104,40 @@ func parseToUrl(addr string) *url.URL {
 	return toUrl
 }
 
-func loadBalancingReverseProxy(target1, target2 *url.URL) *httputil.ReverseProxy {
-	var targetNum = 1
+func loadBalancingReverseProxy() *httputil.ReverseProxy {
 
 	director := func(req *http.Request) {
+
 		var target *url.URL
 		// Simple round robin between the two targets
-		if targetNum == 1 {
-			target = target1
-			targetNum = 2
-		} else {
-			target = target2
-			targetNum = 1
+
+		// for each round-robin rule
+		var newUri string
+		for id, rrrr := range roundRobinRules {
+			// cannot use the second value! it is a copy of the element
+			// se la regola è giusta avanziamo server
+
+			println(fmt.Sprintf("Requested URI %s", req.URL.EscapedPath()))
+			if len(rrrr.rule_source) != 0 { // there is something in source regex filter
+				m1 := regexp.MustCompile(rrrr.rule_source)
+				newUri = m1.ReplaceAllString(req.URL.EscapedPath(), rrrr.rule_dest)
+				println(fmt.Sprintf("Rewriting uri from %s to %s", req.URL.EscapedPath(), newUri))
+			} else {
+				println(fmt.Sprintf("Redirecting w/o changes in uri %s", req.URL.EscapedPath()))
+				newUri = req.URL.EscapedPath()
+			}
+
+			roundRobinRules[id].current_server += 1
+			roundRobinRules[id].current_server = roundRobinRules[id].current_server % len(roundRobinRules[id].rule_servers)
+			target = roundRobinRules[id].rule_servers[roundRobinRules[id].current_server].address
+			println("Found server for target")
+			// found target
+			break
 		}
 
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
-		req.URL.Path, req.URL.RawPath = joinURLPath(target, req.URL)
+		req.URL.Path, req.URL.RawPath = joinURLPath(target, newUri)
 		pageCount += 1
 		UpdateServedPages(pageCount)
 		TextAreaLog(fmt.Sprintf("Served Url:%v RawPath:%v from Host:%v!", req.URL.Path, req.URL.RawPath, req.Host))
@@ -123,23 +162,23 @@ func singleJoiningSlash(a, b string) string {
 }
 
 // joinURLPath is taken from net/http/httputil
-func joinURLPath(a, b *url.URL) (path, rawpath string) {
-	if a.RawPath == "" && b.RawPath == "" {
-		return singleJoiningSlash(a.Path, b.Path), ""
+func joinURLPath(a *url.URL, b string) (path, rawpath string) {
+	if a.RawPath == "" && b == "" {
+		return singleJoiningSlash(a.Path, b), ""
 	}
 	// Same as singleJoiningSlash, but uses EscapedPath to determine
 	// whether a slash should be added
 	apath := a.EscapedPath()
-	bpath := b.EscapedPath()
+	bpath := b
 
 	aslash := strings.HasSuffix(apath, "/")
 	bslash := strings.HasPrefix(bpath, "/")
 
 	switch {
 	case aslash && bslash:
-		return a.Path + b.Path[1:], apath + bpath[1:]
+		return a.Path + b[1:], apath + bpath[1:]
 	case !aslash && !bslash:
-		return a.Path + "/" + b.Path, apath + "/" + bpath
+		return a.Path + "/" + b, apath + "/" + bpath
 	}
-	return a.Path + b.Path, apath + bpath
+	return a.Path + b, apath + bpath
 }

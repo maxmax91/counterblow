@@ -102,6 +102,8 @@ https://gist.github.com/miekg/d9bc045c89578f3cc66a214488e68227
 - Why not? React live chart for visualizing reverse proxy usage
 https://apexcharts.com/react-chart-demos/line-charts/realtime/
 
+- Regex search and replace for something similar to mod_rewrite
+https://www.geeksforgeeks.org/golang-replacing-all-string-which-matches-with-regular-expression/
 
 ## Live Development
 
