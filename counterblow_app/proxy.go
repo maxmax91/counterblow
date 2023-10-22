@@ -123,10 +123,11 @@ func loadBalancingReverseProxy() *httputil.ReverseProxy {
 		// it will try to follow each rewrite rule
 		// or simply follow the rule if rule_source is not set
 		var newUri string
+		reqUrl := req.URL.EscapedPath()
 		for id, rrrr := range roundRobinRules {
 			// cannot use the second value! it is a copy of the element
 			// se la regola è giusta avanziamo server
-			reqUrl := req.URL.EscapedPath()
+
 			println(fmt.Sprintf("Requested URI %s", reqUrl))
 			if len(rrrr.rule_source) != 0 { // there is something in source regex filter
 				m1 := regexp.MustCompile(rrrr.rule_source)
@@ -154,17 +155,17 @@ func loadBalancingReverseProxy() *httputil.ReverseProxy {
 
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
-		//req.Host = target.Host // ATTENTION this is only to try!
+		req.Host = target.Host // ATTENTION this is only to try!
 		req.URL.Path, req.URL.RawPath = joinURLPath(target, newUri)
 
 		if len(newUri) == 0 {
-			println("Cancelling request")
+			println("Cancelling request") // todo:
 			cancel()
 			return
 		}
 		pageCount += 1
 		UpdateServedPages(pageCount)
-		TextAreaLog(fmt.Sprintf("Served Url:%v RawPath:%v to Host:%v!", req.URL.Path, req.URL.RawPath, req.Host))
+		TextAreaLog(fmt.Sprintf("Served Url:%v - Previously:%v to Host:%v!", req.URL.Path, reqUrl, req.Host))
 		// For simplicity, we don't handle RawQuery or the User-Agent header here:
 		// see the full code of NewSingleHostReverseProxy for an example of doing
 		// that.

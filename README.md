@@ -1,8 +1,12 @@
 ## About
 
-Project built with go+wails+React
+Project built with go+wails+React.
 
-# Possible Proxy policies
+This is a load balancer with the possibility to rewrite the URL and add personalized rules through a friendly interface (and a postgres DB behind).
+
+![CounterBlow Load Balancer](./doc/screenshot1.png)
+
+# Theory and possibilities
 
 - Round robin - redistribuite traffic equally among different servers
 - Less latency - redirect to the server with less latency (nearest)
@@ -10,9 +14,9 @@ Project built with go+wails+React
 - Round robin adaptative - Using all those criteria and a alghorithm eg. 
     Round robin probability = 
     
-             (throughput (kb/s)*throughput_const  - latency (ms)*latency_const + round_robin_const)
-    -----------------------------------------------------------
-    summation(throughput (kb/s)*throughput_const - latency (ms)*latency_const + round_robin_const)
+        (throughput (kb/s)*throughput_const  - latency (ms)*latency_const + round_robin_const)
+        -----------------------------------------------------------
+        summation(throughput (kb/s)*throughput_const - latency (ms)*latency_const + round_robin_const)
 
 throughput_const and latency_const decide how much thos two variables are considered.
 
@@ -25,22 +29,56 @@ Observations:
     1) can be kept a lookout table between ip and server, with a expiration time
     2) can be opened a session using cookies
 
-# Implemented stuff
+# Actually implemented stuff
 Implemented:
 - Ability to add and remove rules via UI with a supporting postgres db
 - Ability to rewrite urls and write different rules with different servers alternating
 
-
 # How to use it
-docker-compose up
+Build the database and 
+        
+    docker compose up
+
+Then start the program
+
+## How to debug it
+    wails dev
+
+Launch.json is configured to run the developement-built binary to attach the VS Code debugger.
+
+## Live Development
+
+To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
+server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
+and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
+to this in your browser, and you can call your Go code from devtools.
+
+## Building
+
+To build a redistributable, production mode package, use `wails build`.
 
 
-# React
-Added modules
-Iput for ip input
-- https://github.com/lizheming/iput
+# Test data
+There are some test data in the database that are wrote when docker-compose is run for the first time.
 
-# Sources 
+    -- test rules
+    INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest) VALUES (1, '0.0.0.0', 0, 'microsoft.it:80', '/test1/(.*)', '$1/rewrote/');
+    INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest) VALUES (1, '0.0.0.0', 0, 'google.it:80', '/test2/(.*)', '$1/rewrote/');
+    INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest) VALUES (1, '0.0.0.0', 0, 'google.it:80,microsoft.it:80,tesla.com:80', '.*', '$0');
+
+
+    -- 
+    -- localhost:8080/test1/(something) will redirect to microsoft.it:80/(something)/rewrote/
+    -- localhost:8080/test2/(something) will redirect to google.it:80/(something)/rewrote/
+    -- everything else will redirect balancing to google.it,microsoft.it and tesla.com
+
+## Delete test data
+Shutdown docker-compose, then 
+
+        rm -rf ./postgres-data
+to reset the database.
+
+# Sources & references
 
 - Go tour
 https://go.dev/tour/welcome/1
@@ -66,8 +104,6 @@ https://www.calhoun.io/connecting-to-a-postgresql-database-with-gos-database-sql
 - React documentation
 https://react.dev/learn/tutorial-tic-tac-toe
 
-# Debug
-wails dev
 
 # Package installations
 
@@ -116,14 +152,3 @@ https://apexcharts.com/react-chart-demos/line-charts/realtime/
 Done
 https://www.geeksforgeeks.org/golang-replacing-all-string-which-matches-with-regular-expression/
 
-
-## Live Development
-
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
-
-## Building
-
-To build a redistributable, production mode package, use `wails build`.

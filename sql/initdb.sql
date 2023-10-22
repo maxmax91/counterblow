@@ -20,3 +20,9 @@ CREATE TABLE IF NOT EXISTS hits (
 INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest) VALUES (1, '0.0.0.0', 0, 'microsoft.it:80', '/test1/(.*)', '$1/rewrote/');
 INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest) VALUES (1, '0.0.0.0', 0, 'google.it:80', '/test2/(.*)', '$1/rewrote/');
 INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers, rule_source, rule_dest) VALUES (1, '0.0.0.0', 0, 'google.it:80,microsoft.it:80,tesla.com:80', '.*', '$0');
+
+
+-- 
+-- localhost:8080/test1/(something) will redirect to microsoft.it:80/(something)/rewrote/
+-- localhost:8080/test2/(something) will redirect to google.it:80/(something)/rewrote/
+-- everything else will redirect balancing to google.it,microsoft.it and tesla.com
