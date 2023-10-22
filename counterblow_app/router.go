@@ -1,8 +1,6 @@
 package main
 
-import (
-	"net/http/httputil"
-)
+import "net/http/httputil"
 
 // implemented:
 // ip hash
@@ -10,18 +8,21 @@ import (
 // for other policies is more complicated
 // we need to keep track of server health
 
+type RoutingRule struct {
+	rule_id         string
+	rule_type       string
+	rule_ipaddr     string
+	rule_subnetmask int
+	rule_servers    string
+}
+
+// reflect the database structure
 type BackendServer struct {
 	addess       string
 	priority     int
 	errors       int
 	timeouts     int
 	ReverseProxy *httputil.ReverseProxy
-}
-
-type RoutingRule struct {
-	from   string
-	to     string
-	policy string
 }
 
 func DecideRouting(from string) {

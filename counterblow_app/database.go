@@ -38,7 +38,7 @@ func database_connect() {
 
 func database_addHit(from string, to string) error {
 	fmt.Println("Entering addHit function")
-	stmt, err := db.Prepare("INSERT INTO hits (hit_from, hit_to) VALUES($1, $2) RETURNING hit_datetime")
+	stmt, err := db.Prepare("INSERT INTO hits (hit_from, hit_to) VALUES($1, $2) RETURNING hit_datetime;")
 
 	if err != nil {
 		panic(err.Error())
@@ -52,4 +52,31 @@ func database_addHit(from string, to string) error {
 
 	fmt.Printf("Successfully inserted with datetime %s\n", res)
 	return nil
+}
+func database_addRule(from string, to string) error {
+	// todo
+	return nil
+}
+func database_removeRule(from string, to string) error {
+	// todo
+	return nil
+}
+
+func database_loadRules() {
+	rows, err := db.Query("SELECT rule_id, rule_type, rule_ipaddr, rule_subnetmask, rule_servers FROM rules;")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var rule RoutingRule
+
+		if err := rows.Scan(&rule.rule_id, &rule.rule_type, &rule.rule_ipaddr, &rule.rule_subnetmask, &rule.rule_servers); err != nil {
+			panic(err.Error())
+		}
+		fmt.Printf("Loaded rule %f", rule)
+	}
+	if err := rows.Err(); err != nil {
+		panic(err.Error())
+	}
 }

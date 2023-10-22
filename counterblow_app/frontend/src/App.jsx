@@ -35,7 +35,9 @@ function App() {
     function startBalancer(el) {
         document.getElementById('buttonStart').disabled = true;
         document.getElementById('buttonStop').disabled = false;
-        StartBalancer(name).then(updateResultText);
+        port = parseInt (document.getElementById('bindPort').value)
+        // todo: add bing ip
+        StartBalancer('0.0.0.0', port).then(updateResultText);
     }
 
     function stopBalancer() {
@@ -89,7 +91,7 @@ function App() {
             <div id="input" className="input-box">
                 <span className="hitCounter"> Listen to IP/port:</span>
                 <IPut className="IPut" id="bindIp" defaultValue="0.0.0.0" />
-                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text" value="2345"/>
+                <input id="bindPort" className="input" onChange={updateName} autoComplete="off" name="input" type="text" value="2345"/>
                 <br /><br />
                 <button className="btn" id="buttonStart" onClick={startBalancer}>Start</button>
 

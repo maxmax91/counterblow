@@ -25,9 +25,11 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	global_app = a
+	database_loadRules()
+
 }
 
-func (a *App) StartBalancer(name string) string {
+func (a *App) StartBalancer(bindIp string, port int) string {
 	println("Started do balancer")
 
 	database_connect()
@@ -36,9 +38,7 @@ func (a *App) StartBalancer(name string) string {
 	println("Started proxy")
 
 	//startHttpServer(name) // era solo per debug
-	startReverseProxy("0.0.0.0", 8080)
-
-	return fmt.Sprintf("Hello %s, started proxy!", name)
+	startReverseProxy(bindIp, port)
 
 }
 
@@ -49,6 +49,10 @@ func (a *App) StopBalancer(name string) string {
 
 func (a *App) AppLogAppend(name string) {
 	println("Appending...")
+}
+
+func (a *App) SaveRule(rule_type int, ip string, mask int, servers string) {
+	// saving rule to db
 }
 
 func UpdateServedPages(count int) {
