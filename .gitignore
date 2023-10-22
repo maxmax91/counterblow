@@ -1,3 +1,3 @@
-build/bin
+counterblow_app/build/bin/*
 node_modules
-frontend/dist
+counterblow_app/frontend/dist/*
