@@ -93,6 +93,14 @@ here: https://wails.io/docs/reference/project-config
 - Gracefully stop of the server (not yet implemented)
 https://stackoverflow.com/questions/39320025/how-to-stop-http-listenandserve
 
+- Consider to interace the database with a ORM?
+https://gorm.io/index.html
+
+- UDP simple server for receiving diagnostic stuff?
+https://gist.github.com/miekg/d9bc045c89578f3cc66a214488e68227
+
+- Why not? React live chart for visualizing reverse proxy usage
+https://apexcharts.com/react-chart-demos/line-charts/realtime/
 
 
 ## Live Development
