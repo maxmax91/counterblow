@@ -5,7 +5,6 @@ import {StartBalancer, StopBalancer, OnDOMContentLoaded, AddRule, RemoveRule, Re
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import IPut from 'iput';
 
 runtime.EventsOn("rcv:update_served_pages", (msg) => document.getElementById("served_pages").innerText = msg)
 runtime.EventsOn("rcv:clear_rules_listbox", () => document.getElementById("rules_list_box").innerHTML = "")
@@ -40,64 +39,58 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 
 function App() {
-    
-    const updateResultStartBalancer = (result) => {
-      if (result == true) {
+  const updateResultStartBalancer = (result) => {
+    alert(result);
+  } ;
 
-      }
-    } ;
-  
 
-    function startBalancer(el) {
-        var port = parseInt (document.getElementById('bindPort').value);
-        // todo: add bing ip
-        StartBalancer('0.0.0.0', port); // will not return
-        document.getElementById('buttonStart').disabled = true;
-        document.getElementById('buttonStop').disabled = false;
-        document.getElementById('loaderSpinner').style.visibility = 'visible';
+  function startBalancer(el) {
+      var port = parseInt (document.getElementById('bindPort').value);
+      // todo: add bing ip
+      StartBalancer('0.0.0.0', port).then(updateResultStartBalancer); // will not return
+      document.getElementById('buttonStart').disabled = true;
+      document.getElementById('buttonStop').disabled = false;
+      document.getElementById('loaderSpinner').style.visibility = 'visible';
+  }
+
+  function addRule() {
+    // aggiungi una regola
+    var rule_type = document.getElementById('rule_type').value;
+    var rule_ipaddr = '0.0.0.0';
+    var rule_subnetmask = 0;
+    var rule_servers =  document.getElementById('rule_servers').value;
+    if (rule_servers == 0) {
+      alert("Write at least one server!");
+      return;
     }
+    var rule_source =  document.getElementById('rule_source').value;
+    var rule_dest =  document.getElementById('rule_dest').value;
 
-    function addRule() {
-      // aggiungi una regola
-      var rule_type = document.getElementById('rule_type').value;
-      var rule_ipaddr = '0.0.0.0';
-      var rule_subnetmask = 0;
-      var rule_servers =  document.getElementById('rule_servers').value;
-      if (rule_servers == 0) {
-        alert("Write at least one server!");
-        return;
-      }
-      var rule_source =  document.getElementById('rule_source').value;
-      var rule_dest =  document.getElementById('rule_dest').value;
+    AddRule(parseInt(rule_type), rule_ipaddr, parseInt(rule_subnetmask), rule_servers, rule_source, rule_dest).then(refreshRules);
+    document.getElementById('rule_servers').value = '';
+    document.getElementById('rule_source').value = '';
+    document.getElementById('rule_dest').value = '';
+  }
 
-      AddRule(parseInt(rule_type), rule_ipaddr, parseInt(rule_subnetmask), rule_servers, rule_source, rule_dest).then(refreshRules);
-      document.getElementById('rule_servers').value = '';
-      document.getElementById('rule_source').value = '';
-      document.getElementById('rule_dest').value = '';
-    }
+  function removeRule() {
+    var rule_id = document.getElementById('rules_list_box').value;
 
-    function removeRule() {
-      var rule_id = document.getElementById('rules_list_box').value;
+    RemoveRule( parseInt(rule_id)).then(refreshRules);
+  }
 
-      RemoveRule( parseInt(rule_id)).then(refreshRules);
-    }
+  function refreshRules() {
+    RefreshRules();
+  }
+  function stopBalancer() {
+    alert('Sorry! Not yet implemented. Restart the application.');
+    //document.getElementById('buttonStart').disabled = false;
+    //document.getElementById('buttonStop').disabled = true;
+  }
 
-    function refreshRules() {
-      RefreshRules();
-    }
-    function stopBalancer() {
-      alert('Sorry! Not yet implemented. Restart the application.');
-      //document.getElementById('buttonStart').disabled = false;
-      //document.getElementById('buttonStop').disabled = true;
-    }
-
-    runtime.EventsOn("rcv:greet", (msg) => document.getElementById("result").innerText = msg)
-    window.StartUpdateServedPagesEvent = () => {
-      // noinspection JSIgnoredPromiseFromCall
-      window.go.main.App.StartUpdateServedPagesEvent();
-    }
-
-
+  window.StartUpdateServedPagesEvent = () => {
+    // noinspection JSIgnoredPromiseFromCall
+    window.go.main.App.StartUpdateServedPagesEvent();
+  }
     return (
         <div id="App">
             <div className="square">
@@ -109,7 +102,6 @@ function App() {
               
               <div className="formRow">
               <div><span>IP Addr filter (not implemented):</span></div>
-              <IPut className="IPut" defaultValue="0.0.0.0"/> / <input className="portInput" type="text" defaultValue="0" />
               </div>
 
               <div className="formRow">
@@ -141,12 +133,11 @@ function App() {
 
                 <div id="input" className="input-box">
                     <span className="hitCounter"> Listen to IP/port: </span>
-                    <IPut className="IPut" id="bindIp" defaultValue="0.0.0.0" /> 
                     <input id="bindPort" className="portInput" autoComplete="off" name="input" type="text" onChange={e => this.setState({ text: e.target.value })} defaultValue="8080"/>
                     <br /><br />
                     <button className="btn" id="buttonStart" onClick={startBalancer}>Start</button>
 
-                    <button className="btn" id="buttonStop" disabled onClick={stopBalancer}>Stop</button>
+                    <button className="btn" id="buttonStop" onClick={stopBalancer}>Stop</button>
                     <div className="">
                     <div className="loader" id="loaderSpinner"></div>
 
@@ -159,7 +150,7 @@ function App() {
                 <h2>Log</h2>
                 <textarea className="textAreaField" id="textAreaLog"></textarea>
               </div>
-        </div>
+          </div>
     )
 }
 
