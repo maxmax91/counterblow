@@ -4,6 +4,8 @@ import './App.css';
 import {StartBalancer, StopBalancer} from "../wailsjs/go/main/App";
 
 import React from 'react';
+import ReactDOM from 'react-dom';
+import IPut from 'iput';
 
 runtime.EventsOn("rcv:update_served_pages", (msg) => document.getElementById("served_pages").innerText = msg)
 runtime.EventsOn("rcv:add_log_string", (msg) => document.getElementById("textAreaLog").value += msg)
@@ -56,28 +58,26 @@ function App() {
               <h2>Rules config</h2>
               
               <select multiple>
-                <option value="1">Rule 1</option>
+                <option value="1">IP: 1.1.1.1/21 Rule: RoundRobin Servers: boh1.com boh2.com</option>
                 <option value="2">Rule 2</option>
                 <option value="3">Rule 3</option>
               </select>
+              
+              <div className="formRow">
+              <span>IP Addr:</span>
+              <IPut className="IPut" defaultValue="0.0.0.0"/> / <input className="portInput" type="text" value="0" />
+              </div>
 
-              <div>
-              IP Addr:
-              <input type="text" placeholder='255.255.255.255' />
+              <div className="formRow">
+              <span>Backend servers (comma-separated)</span>
               </div>
-              <div>
-              Subnet mask:
-              <input type="text" placeholder='255.255.255.255' />
-              </div>
-              <div>
-              Backend servers (comma-separated)
-              <br />
-              <input type="text" placeholder="google.it:80,microsoft.it:80" />
+              <div className="formRow">
+              <input className="servers" type="text" placeholder="google.it:80,microsoft.it:80" />
               </div>
               <span>Algorythm</span>
               <select>
-                <option>Round robin</option>
-                <option>IP hash</option>
+                <option value="1">1: Round robin</option>
+                <option value="2">2: IP hash</option>
               </select>
               <button>&#x2795;</button>
               <button>&#x2796;</button>
@@ -87,7 +87,8 @@ function App() {
             <p></p>
             <div id="result" className="result">{resultText}</div>
             <div id="input" className="input-box">
-                <span className="hitCounter"> Listen to port:</span>
+                <span className="hitCounter"> Listen to IP/port:</span>
+                <IPut className="IPut" id="bindIp" defaultValue="0.0.0.0" />
                 <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text" value="2345"/>
                 <br /><br />
                 <button className="btn" id="buttonStart" onClick={startBalancer}>Start</button>

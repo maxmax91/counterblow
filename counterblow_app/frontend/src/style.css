@@ -41,15 +41,13 @@ body {
     color: gainsboro;
     width: 50%;
     height: 50%;
-    padding: 0;
+    padding: 1em;
     margin: 0;
     float: left;
  }
 
  .bordered {
-    float:left;
-    border:1px solid red;
-
+    border:1px solid gainsboro;
  }
  .full-width {
     width: 100%;
@@ -60,3 +58,26 @@ body {
  button {
     padding: 1em;
  }
+
+ .formRow {
+    padding-top: 1em;
+    
+ }
+ .formRow > span {
+    padding: 0 1em 0 1em;
+ }
+
+input.servers {
+    width: 100%;
+    padding: 1em;
+    box-sizing: border-box;
+}
+
+.IPut {
+    background-color: white;
+}
+
+.portInput {
+    width: 2em;
+    height: 2.1em;
+}

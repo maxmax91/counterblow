@@ -25,7 +25,10 @@ Observations:
     1) can be kept a lookout table between ip and server, with a expiration time
     2) can be opened a session using cookies
 
-
+# React
+Added modules
+Iput for ip input
+- https://github.com/lizheming/iput
 
 # Sources 
 
@@ -85,6 +88,12 @@ docker-compose up
 4) Configuration
 You can configure the project by editing `wails.json`. More information about the project settings can be found
 here: https://wails.io/docs/reference/project-config
+
+# TODOs
+- Gracefully stop of the server (not yet implemented)
+https://stackoverflow.com/questions/39320025/how-to-stop-http-listenandserve
+
+
 
 ## Live Development
 

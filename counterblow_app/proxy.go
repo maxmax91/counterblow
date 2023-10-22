@@ -14,10 +14,10 @@ var started bool = false
 var pageCount int
 
 // for debug purposes?
-func startHttpServer(port string) {
+func startHttpServer(bindAddr string, port string) {
 
 	if started == false {
-		addr := flag.String("addr", "127.0.0.1:"+port, "listen address")
+		addr := flag.String("addr", bindAddr+":"+port, "listen address")
 		flag.Parse()
 
 		http.HandleFunc("/",
@@ -66,6 +66,7 @@ func startReverseProxy(listeningAddr string, listeningPort int) {
 	if err := http.ListenAndServe(*fromAddr, proxy); err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
+
 }
 
 // parseToUrl parses a "to" address to url.URL value
