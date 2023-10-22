@@ -16,8 +16,8 @@ type RoutingRule struct {
 	rule_ipaddr     string
 	rule_subnetmask int
 	rule_servers    string
-	rule_source     string // requested page. Can be (.*)
-	rule_dest       string // rewrited page. Can be $1
+	rule_source     string // requested page. Can be (.*) or regex
+	rule_dest       string // rewritten page. Can be $1
 }
 
 type RoundRobinRoutingRule struct { // extends RoutingRule -- how to do it in go?
@@ -28,7 +28,7 @@ type RoundRobinRoutingRule struct { // extends RoutingRule -- how to do it in go
 	rule_servers    []BackendServer
 	current_server  int    // defines the current server
 	rule_source     string // requested page. Can be (.*)
-	rule_dest       string // rewrited page. Can be $1
+	rule_dest       string // rewritten page. Can be $1
 }
 
 // reflect the database structure
