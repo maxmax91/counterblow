@@ -19,15 +19,14 @@ const (
 var db *sql.DB
 var err error
 
-func connect() {
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
+func database_connect() {
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 	db, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
 	}
-	//defer db.Close()
+	//defer db.Close() // do not close, keep it opened
 
 	err = db.Ping()
 	if err != nil {
@@ -37,21 +36,20 @@ func connect() {
 
 }
 
-func addHit() error {
-	fmt.Println("test")
-	stmt, err := db.Prepare("INSERT INTO hits (hit_from, hit_to) VALUES(?,?) RETURNING hit_datetime")
+func database_addHit(from string, to string) error {
+	fmt.Println("Entering addHit function")
+	stmt, err := db.Prepare("INSERT INTO hits (hit_from, hit_to) VALUES($1, $2) RETURNING hit_datetime")
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	res, err := stmt.Exec("test", "test@mail.com")
+	res, err := stmt.Exec(from, to)
 
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Println(res)
 
-	fmt.Println("Successfully inserted!")
+	fmt.Printf("Successfully inserted with datetime %s\n", res)
 	return nil
 }

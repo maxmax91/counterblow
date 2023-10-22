@@ -29,6 +29,9 @@ Observations:
 
 # Sources 
 
+- Go tour
+https://go.dev/tour/welcome/1
+
 - Proxy in go
 https://reintech.io/blog/creating-simple-proxy-server-with-go
 

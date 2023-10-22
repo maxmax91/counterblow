@@ -5,18 +5,22 @@ import {StartBalancer, StopBalancer} from "../wailsjs/go/main/App";
 
 import React from 'react';
 
+runtime.EventsOn("rcv:update_served_pages", (msg) => document.getElementById("served_pages").innerText = msg)
+runtime.EventsOn("rcv:add_log_string", (msg) => document.getElementById("textAreaLog").value += msg)
+
 const MyComponent = () => {
-    const [count, setCount] = useState(0);
-  
-    useEffect(() => {
-      document.title = `Count: ${count}`;
-    }, [count]);
-  
+ 
     return (
       <div>
-        <h1>Balanced: {count}</h1>
+        
         <button onClick={() => setCount(count + 1)}>Increment</button>
       </div>
+    );
+  };
+
+  const GridComponent = () => {
+    return (
+      <div className="square">left top </div>
     );
   };
 
@@ -26,34 +30,76 @@ function App() {
     const updateName = (e) => setName(e.target.value);
     const updateResultText = (result) => setResultText(result);
 
-    function startBalancer() {
+    function startBalancer(el) {
+        document.getElementById('buttonStart').disabled = true;
+        document.getElementById('buttonStop').disabled = false;
         StartBalancer(name).then(updateResultText);
     }
 
     function stopBalancer() {
+      document.getElementById('buttonStart').disabled = false;
+      document.getElementById('buttonStop').disabled = true;
         StopBalancer(name).then(updateResultText);
     }
 
+    runtime.EventsOn("rcv:greet", (msg) => document.getElementById("result").innerText = msg)
+    window.StartUpdateServedPagesEvent = () => {
+      // noinspection JSIgnoredPromiseFromCall
+      window.go.main.App.StartUpdateServedPagesEvent();
+    }
+
+
     return (
         <div id="App">
-            <MyComponent />
-            <h1>CounterBlow Load Balancer</h1>
+           <h1>CounterBlow Load Balancer</h1>
+            <div className="square bordered">
+              <h2>Rules config</h2>
+              
+              <select multiple>
+                <option value="1">Rule 1</option>
+                <option value="2">Rule 2</option>
+                <option value="3">Rule 3</option>
+              </select>
+
+              <div>
+              IP Addr:
+              <input type="text" placeholder='255.255.255.255' />
+              </div>
+              <div>
+              Subnet mask:
+              <input type="text" placeholder='255.255.255.255' />
+              </div>
+              <div>
+              Backend servers (comma-separated)
+              <br />
+              <input type="text" placeholder="google.it:80,microsoft.it:80" />
+              </div>
+              <span>Algorythm</span>
+              <select>
+                <option>Round robin</option>
+                <option>IP hash</option>
+              </select>
+              <button>&#x2795;</button>
+              <button>&#x2796;</button>
+            </div>
+            
+            <h2>Served connections: <div id="served_pages">0</div></h2>
             <p></p>
             <div id="result" className="result">{resultText}</div>
             <div id="input" className="input-box">
                 <span className="hitCounter"> Listen to port:</span>
-                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text" value="2345"/><br /><br />
-                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text"/>
+                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text" value="2345"/>
                 <br /><br />
-                <button className="btn" onClick={startBalancer}>Start</button>
+                <button className="btn" id="buttonStart" onClick={startBalancer}>Start</button>
 
-                <button className="btn" disabled onClick={stopBalancer}>Stop</button>
+                <button className="btn" id="buttonStop" disabled onClick={stopBalancer}>Stop</button>
 
             </div>
             <div>
-            <h2>Log</h2>
-              <textarea className="textAreaField"></textarea>
-
+              <div className="square">
+              <h2>Log</h2>
+              <textarea className="textAreaField" id="textAreaLog"></textarea>
+              </div>
             </div>
         </div>
     )

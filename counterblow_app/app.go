@@ -3,12 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
+
 type App struct {
 	ctx context.Context
 }
+
+var global_app *App
 
 // NewApp creates a new App application struct
 func NewApp() *App {
@@ -19,19 +24,22 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	global_app = a
 }
 
 func (a *App) StartBalancer(name string) string {
 	println("Started do balancer")
 
-	connect()
-	addHit()
+	database_connect()
+	database_addHit("from", "to")
 
 	println("Started proxy")
 
-	startProxy(name)
+	//startHttpServer(name) // era solo per debug
+	startReverseProxy("0.0.0.0", 8080)
 
 	return fmt.Sprintf("Hello %s, started proxy!", name)
+
 }
 
 func (a *App) StopBalancer(name string) string {
@@ -39,7 +47,20 @@ func (a *App) StopBalancer(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
 
-func (a *App) AppLogAppend(name string) string {
+func (a *App) AppLogAppend(name string) {
 	println("Appending...")
-	return ""
+}
+
+func UpdateServedPages(count int) {
+	//go func() {
+	runtime.EventsEmit(global_app.ctx, "rcv:update_served_pages", count)
+
+	//}()
+}
+
+func TextAreaLog(appendText string) {
+	//go func() {
+	runtime.EventsEmit(global_app.ctx, "rcv:add_log_string", appendText+"\n")
+
+	//}()
 }
