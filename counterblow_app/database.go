@@ -19,7 +19,7 @@ const (
 var db *sql.DB
 var err error
 
-func database_connect() {
+func database_connect() error {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 	db, err = sql.Open("postgres", psqlInfo)
@@ -30,10 +30,10 @@ func database_connect() {
 
 	err = db.Ping()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	fmt.Println("Successfully connected!")
-
+	return nil
 }
 
 func database_addHit(from string, to string) error {
@@ -62,7 +62,7 @@ func database_removeRule(from string, to string) error {
 	return nil
 }
 
-func database_loadRules() {
+func database_loadRules() []RoutingRule {
 	rows, err := db.Query("SELECT rule_id, rule_type, rule_ipaddr, rule_subnetmask, rule_servers FROM rules;")
 	if err != nil {
 		panic(err.Error())
@@ -74,9 +74,10 @@ func database_loadRules() {
 		if err := rows.Scan(&rule.rule_id, &rule.rule_type, &rule.rule_ipaddr, &rule.rule_subnetmask, &rule.rule_servers); err != nil {
 			panic(err.Error())
 		}
-		fmt.Printf("Loaded rule %f", rule)
+		fmt.Printf("Loaded rule %v", rule)
 	}
 	if err := rows.Err(); err != nil {
 		panic(err.Error())
 	}
+	return nil
 }

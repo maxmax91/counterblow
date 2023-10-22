@@ -75,9 +75,12 @@ input.servers {
 
 .IPut {
     background-color: white;
+    margin-right: 1em;
 }
 
 .portInput {
-    width: 2em;
+    width: 5em;
     height: 2.1em;
+    margin-left: 1em;
+    text-align: center;
 }

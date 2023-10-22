@@ -52,7 +52,7 @@ func stopProxy() {
 
 }
 
-func startReverseProxy(listeningAddr string, listeningPort int) {
+func startReverseProxy(listeningAddr string, listeningPort int) error {
 	fromAddr := flag.String("from", listeningAddr+":"+fmt.Sprint(listeningPort), "proxy's listening address")
 	toAddr1 := flag.String("to1", "google.it:80", "the first address this proxy will forward to")
 	toAddr2 := flag.String("to2", "microsoft.it:80", "the second address this proxy will forward to")
@@ -65,8 +65,9 @@ func startReverseProxy(listeningAddr string, listeningPort int) {
 	log.Println("Starting proxy server on", *fromAddr)
 	if err := http.ListenAndServe(*fromAddr, proxy); err != nil {
 		log.Fatal("ListenAndServe:", err)
+		return err
 	}
-
+	return nil
 }
 
 // parseToUrl parses a "to" address to url.URL value

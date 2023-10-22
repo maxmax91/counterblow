@@ -16,4 +16,4 @@ CREATE TABLE IF NOT EXISTS hits (
 
 
 -- test rules
-INSERT rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers) VALUES (1, '0.0.0.0', 0, 'google.it:80,microsoft.it:80')
+INSERT INTO rules (rule_type, rule_ipaddr, rule_subnetmask, rule_servers) VALUES (1, '0.0.0.0', 0, 'google.it:80,microsoft.it:80')

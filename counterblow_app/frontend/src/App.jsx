@@ -1,14 +1,24 @@
 import {useState, useEffect} from 'react';
 import logo from './assets/images/logo-universal.png';
 import './App.css';
-import {StartBalancer, StopBalancer} from "../wailsjs/go/main/App";
+import {StartBalancer, StopBalancer, OnDOMContentLoaded} from "../wailsjs/go/main/App";
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import IPut from 'iput';
 
 runtime.EventsOn("rcv:update_served_pages", (msg) => document.getElementById("served_pages").innerText = msg)
-runtime.EventsOn("rcv:add_log_string", (msg) => document.getElementById("textAreaLog").value += msg)
+runtime.EventsOn("rcv:add_log_string", function(msg) { 
+  var el = document.getElementById("textAreaLog");
+  if (el != null) document.getElementById("textAreaLog").value += msg;
+  else console.log("Cannot print msg" + msg);
+ }
+)
+
+
+document.addEventListener('DOMContentLoaded', (event) => {
+  OnDOMContentLoaded('Hi!').then((result) => {  if (result != null) alert(result) ; } );
+});
 
 const MyComponent = () => {
  
@@ -26,24 +36,30 @@ const MyComponent = () => {
     );
   };
 
-function App() {
-    const [resultText, setResultText] = useState("Please enter your name below 👇");
-    const [name, setName] = useState('');
-    const updateName = (e) => setName(e.target.value);
-    const updateResultText = (result) => setResultText(result);
+function bindPortChange(event) {
+  console.log(event.target.value);
+}
 
-    function startBalancer(el) {
+function App() {
+    const updateName = (e) => function() { };
+    const updateResultStartBalancer = (result) => {
+      if (result == true) {
         document.getElementById('buttonStart').disabled = true;
         document.getElementById('buttonStop').disabled = false;
-        port = parseInt (document.getElementById('bindPort').value)
+      }
+    } ;
+
+
+    function startBalancer(el) {
+
+        var port = parseInt (document.getElementById('bindPort').value)
         // todo: add bing ip
-        StartBalancer('0.0.0.0', port).then(updateResultText);
+        StartBalancer('0.0.0.0', port).then(updateResultStartBalancer);
     }
 
     function stopBalancer() {
       document.getElementById('buttonStart').disabled = false;
       document.getElementById('buttonStop').disabled = true;
-        StopBalancer(name).then(updateResultText);
     }
 
     runtime.EventsOn("rcv:greet", (msg) => document.getElementById("result").innerText = msg)
@@ -87,11 +103,10 @@ function App() {
             
             <h2>Served connections: <div id="served_pages">0</div></h2>
             <p></p>
-            <div id="result" className="result">{resultText}</div>
             <div id="input" className="input-box">
-                <span className="hitCounter"> Listen to IP/port:</span>
-                <IPut className="IPut" id="bindIp" defaultValue="0.0.0.0" />
-                <input id="bindPort" className="input" onChange={updateName} autoComplete="off" name="input" type="text" value="2345"/>
+                <span className="hitCounter"> Listen to IP/port: </span>
+                <IPut className="IPut" id="bindIp" defaultValue="0.0.0.0" /> 
+                <input id="bindPort" className="input" autoComplete="off" name="input" type="text" onChange={bindPortChange} value="8080"/>
                 <br /><br />
                 <button className="btn" id="buttonStart" onClick={startBalancer}>Start</button>
 
